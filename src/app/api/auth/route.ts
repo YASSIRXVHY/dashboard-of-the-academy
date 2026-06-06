@@ -9,7 +9,7 @@ const DEFAULT_ADMIN = {
   name: 'Yassir',
 };
 
-// Ensure admin exists — creates one if the database is empty
+// Ensure admin exists ï¿½ creates one if the database is empty
 async function ensureAdminExists() {
   const count = await db.admin.count();
   if (count === 0) {
@@ -25,7 +25,7 @@ async function ensureAdminExists() {
   }
 }
 
-// POST /api/auth — login
+// POST /api/auth ï¿½ login
 export async function POST(request: NextRequest) {
   try {
     // Make sure there's an admin user
