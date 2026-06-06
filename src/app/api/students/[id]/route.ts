@@ -7,7 +7,7 @@ export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = authenticateRequest(request);
+  const authError = await authenticateRequest(request);
   if (authError) return authError;
 
   try {
@@ -50,7 +50,7 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const authError = authenticateRequest(request);
+  const authError = await authenticateRequest(request);
   if (authError) return authError;
 
   try {

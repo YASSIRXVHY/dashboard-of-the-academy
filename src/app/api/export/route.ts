@@ -13,7 +13,7 @@ function toCsv(rows: Record<string, unknown>[]): string {
 
 // GET /api/export/groups?format=csv
 export async function GET(request: NextRequest) {
-  const authError = authenticateRequest(request);
+  const authError = await authenticateRequest(request);
   if (authError) return authError;
 
   try {

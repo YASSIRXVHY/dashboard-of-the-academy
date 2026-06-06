@@ -4,7 +4,7 @@ import { authenticateRequest } from '@/lib/auth-middleware';
 
 // GET /api/payments?groupId=xxx&month=xxx&status=xxx
 export async function GET(request: NextRequest) {
-  const authError = authenticateRequest(request);
+  const authError = await authenticateRequest(request);
   if (authError) return authError;
 
   try {
@@ -54,7 +54,7 @@ export async function GET(request: NextRequest) {
 
 // POST /api/payments
 export async function POST(request: NextRequest) {
-  const authError = authenticateRequest(request);
+  const authError = await authenticateRequest(request);
   if (authError) return authError;
 
   try {

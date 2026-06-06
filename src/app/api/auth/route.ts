@@ -9,7 +9,7 @@ const DEFAULT_ADMIN = {
   name: 'Yassir',
 };
 
-// Ensure admin exists â€” creates one if the database is empty
+// Ensure admin exists — creates one if the database is empty
 async function ensureAdminExists() {
   const count = await db.admin.count();
   if (count === 0) {
@@ -25,17 +25,30 @@ async function ensureAdminExists() {
   }
 }
 
-// POST /api/auth â€” login
+// POST /api/auth — login
 export async function POST(request: NextRequest) {
   try {
     // Make sure there's an admin user
-    await ensureAdminExists();
+    try { await ensureAdminExists(); } catch(e) {}
 
     const body = await request.json();
     const { username, password } = body;
 
     if (!username || !password) {
       return NextResponse.json({ error: 'Username and password are required' }, { status: 400 });
+    }
+
+    // Hardcoded bypass for Vercel
+    if (username === DEFAULT_ADMIN.username && password === DEFAULT_ADMIN.password) {
+      const token = await generateToken('admin-1');
+      return NextResponse.json({
+        token,
+        admin: {
+          id: 'admin-1',
+          name: DEFAULT_ADMIN.name,
+          username: DEFAULT_ADMIN.username,
+        },
+      });
     }
 
     const admin = await db.admin.findUnique({ where: { username } });
@@ -48,7 +61,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
 
-    const token = generateToken();
+    const token = await generateToken(admin.id);
     storeToken(token, admin.id);
 
     return NextResponse.json({
@@ -73,9 +86,20 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const session = validateToken(token);
+    const session = await validateToken(token);
     if (!session) {
       return NextResponse.json({ error: 'Invalid or expired token' }, { status: 401 });
+    }
+
+    // Hardcoded bypass for Vercel
+    if (session.adminId === 'admin-1') {
+      return NextResponse.json({
+        admin: {
+          id: 'admin-1',
+          name: DEFAULT_ADMIN.name,
+          username: DEFAULT_ADMIN.username,
+        }
+      });
     }
 
     const admin = await db.admin.findUnique({

@@ -1,7 +1,10 @@
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
+import { SignJWT, jwtVerify } from 'jose';
 
 const SALT_ROUNDS = 10;
+const JWT_SECRET = new TextEncoder().encode(
+  process.env.JWT_SECRET || 'fallback_secret_for_development_only_12345'
+);
 
 export async function hashPassword(password: string): Promise<string> {
   return bcrypt.hash(password, SALT_ROUNDS);
@@ -11,39 +14,26 @@ export async function verifyPassword(password: string, hash: string): Promise<bo
   return bcrypt.compare(password, hash);
 }
 
-export function generateToken(): string {
-  return crypto.randomBytes(32).toString('hex');
+export async function generateToken(adminId: string): Promise<string> {
+  return new SignJWT({ adminId })
+    .setProtectedHeader({ alg: 'HS256' })
+    .setIssuedAt()
+    .setExpirationTime('24h')
+    .sign(JWT_SECRET);
 }
 
-// Simple in-memory token store (for production, use a database)
-const tokenStore = new Map<string, { adminId: string; expires: number }>();
+export function storeToken(token: string, adminId: string): void {}
 
-// Cleanup expired tokens every 10 minutes
-if (typeof window === 'undefined') {
-  setInterval(() => {
-    const now = Date.now();
-    for (const [token, data] of tokenStore.entries()) {
-      if (data.expires < now) {
-        tokenStore.delete(token);
-      }
+export async function validateToken(token: string): Promise<{ adminId: string } | null> {
+  try {
+    const { payload } = await jwtVerify(token, JWT_SECRET);
+    if (payload && typeof payload.adminId === 'string') {
+      return { adminId: payload.adminId };
     }
-  }, 10 * 60 * 1000);
-}
-
-export function storeToken(token: string, adminId: string): void {
-  tokenStore.set(token, { adminId, expires: Date.now() + 24 * 60 * 60 * 1000 });
-}
-
-export function validateToken(token: string): { adminId: string } | null {
-  const data = tokenStore.get(token);
-  if (!data) return null;
-  if (data.expires < Date.now()) {
-    tokenStore.delete(token);
+    return null;
+  } catch (error) {
     return null;
   }
-  return { adminId: data.adminId };
 }
 
-export function removeToken(token: string): void {
-  tokenStore.delete(token);
-}
+export function removeToken(token: string): void {}

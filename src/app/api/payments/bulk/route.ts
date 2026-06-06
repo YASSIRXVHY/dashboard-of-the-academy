@@ -5,7 +5,7 @@ import { authenticateRequest } from '@/lib/auth-middleware';
 // POST /api/payments/bulk
 // Bulk create payments for all students in a group for a given month
 export async function POST(request: NextRequest) {
-  const authError = authenticateRequest(request);
+  const authError = await authenticateRequest(request);
   if (authError) return authError;
 
   try {
