@@ -36,7 +36,7 @@ export async function GET(request: NextRequest) {
     );
   } catch (error) {
     console.error('Fetch groups error:', error);
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }
 
@@ -94,6 +94,6 @@ export async function POST(request: NextRequest) {
     );
   } catch (error) {
     console.error('Create group error:', error);
-    return NextResponse.json({ error: 'Internal server error', details: error.message }, { status: 500 });
+    return NextResponse.json({ error: 'Internal server error', details: error instanceof Error ? error.message : 'Unknown error' }, { status: 500 });
   }
 }

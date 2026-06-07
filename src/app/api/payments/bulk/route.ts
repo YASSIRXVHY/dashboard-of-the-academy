@@ -39,8 +39,8 @@ export async function POST(request: NextRequest) {
     const PRICING_ADULT = 250; // 18 and above
     const PRICING_MINOR = 200; // under 18
 
-    const results = [];
-    const skipped = [];
+    const results: any[] = [];
+    const skipped: any[] = [];
 
     for (const student of students) {
       // Check if payment already exists for this student/group/month

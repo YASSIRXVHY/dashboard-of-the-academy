@@ -28,6 +28,7 @@ import {
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
 import { useAppStore } from '@/lib/store';
+import { downloadInvoice, downloadMultipleInvoices } from '@/lib/pdf-utils';
 
 interface Payment {
   id: string;
@@ -283,6 +284,17 @@ export function PaymentsPage() {
           <Button variant="outline" size="sm" onClick={handleExportCSV} className="transition-all duration-200 active:scale-[0.98]">
             <Download className="h-4 w-4 mr-1" /> Export CSV
           </Button>
+          <Button variant="outline" size="sm" onClick={() => {
+            const paidPayments = payments.filter(p => p.status === 'paid');
+            if (paidPayments.length === 0) {
+              toast.error('No paid payments to export');
+              return;
+            }
+            downloadMultipleInvoices(paidPayments);
+            toast.success('Invoices downloaded');
+          }} className="transition-all duration-200 active:scale-[0.98] text-blue-600 border-blue-200 hover:bg-blue-50">
+            <Download className="h-4 w-4 mr-1" /> Export Invoices (PDF)
+          </Button>
           <Button variant="outline" size="sm" onClick={() => setBulkPaymentOpen(true)} className="transition-all duration-200 active:scale-[0.98]">
             <Layers className="h-4 w-4 mr-1" /> Bulk Create
           </Button>
@@ -419,6 +431,11 @@ export function PaymentsPage() {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1">
+                          {payment.status === 'paid' && (
+                            <Button variant="ghost" size="sm" className="h-7 px-2 text-xs text-blue-600 hover:bg-blue-50 hover:text-blue-700" onClick={() => downloadInvoice(payment)}>
+                              Invoice
+                            </Button>
+                          )}
                           <Button variant="ghost" size="sm" className="h-7 px-2 text-xs" onClick={() => openEditStatus(payment)}>
                             Edit
                           </Button>
